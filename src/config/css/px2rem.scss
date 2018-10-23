@@ -1,0 +1,5 @@
+// 可全局调用的scss文件
+@function px2rem($px){
+	$rem:37.5px;
+	@return ($px / $rem) + rem;
+}
