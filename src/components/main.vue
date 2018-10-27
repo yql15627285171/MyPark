@@ -9,15 +9,18 @@
               <span class="fa fa-home" ></span>
             </el-tooltip>
           </router-link>
-
-
+          <router-link to="/">
+            <el-tooltip  effect="dark" content="退出登录" placement="bottom">
+              <span class="fa fa-logout" style="font-size: 26px"></span>
+            </el-tooltip>
+          </router-link>
         </div>
       </el-header>
       <el-main >
 
         <div class="navigator">
           <el-breadcrumb separator-class="el-icon-arrow-right">
-            <el-breadcrumb-item v-for="(item,index) in breadcrumbItems" :to="{name:item.name}">{{item.label}}</el-breadcrumb-item>
+            <el-breadcrumb-item v-for="item in breadcrumbItems"  :to="{name:item.name}">{{item.label}}</el-breadcrumb-item>
           </el-breadcrumb>
         </div>
 

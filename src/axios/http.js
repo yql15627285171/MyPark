@@ -83,13 +83,13 @@ function checkCode (res) {
 
 export default {
 
-  post (url, data,token) {
+  post (url, data,token,timeout=10000) {
     return axios({
       method: 'post',
       url:url,
       // data: qs.stringify(data),
       data:data,
-      timeout: 10000,
+      timeout: timeout,
       headers: {
         'content-type': 'application/json;chartset=uft-8',
         'token':token
@@ -97,12 +97,12 @@ export default {
     }).then(checkStatus).then(checkCode)
   },
 
-  get (url, params,token) {
+  get (url, params,token,timeout=10000) {
     return axios({
       method: 'get',
       url:url,
       params, // get 请求时带的参数
-      timeout: 10000,
+      timeout: timeout,
       headers: {
         "Content-Type":"application/json; charset=UTF8",
         'token':token

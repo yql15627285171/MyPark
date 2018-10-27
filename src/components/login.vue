@@ -32,7 +32,7 @@
         }
       },
       mounted(){
-
+        console.log(1,  ...[1, 2, 3])
       },
       methods:{
         showLogin:function () {

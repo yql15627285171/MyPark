@@ -3,13 +3,13 @@
     <div class="wrap">
       <div class="condition">
         <el-input
-          v-model.trim="queryMeterAssetsCode"
-          placeholder="请输入资产编号"
+          v-model.trim="queryAssetsCode"
+          placeholder="请输入资产编号关键词"
           prefix-icon="el-icon-search"
           size="medium">
         </el-input>
-        <el-button type="primary" size="medium" @click="">查询</el-button>
-        <el-button type="primary" size="medium" @click="showAddDialog">单个添加</el-button>
+        <el-button type="primary" size="medium" @click="getPageList(queryAssetsCode)">查询</el-button>
+        <el-button type="primary" size="medium" @click="addBtnClick">单个添加</el-button>
         <el-button type="primary" size="medium" >批量添加</el-button>
         <el-button type="primary" size="medium" >档案下发</el-button>
       </div>
@@ -18,34 +18,64 @@
       <el-dialog title="增加/修改 表计" :visible.sync="dialogFormVisible">
         <el-form :model="formData" ref="formData" label-width="100px" class="myForm">
 
-          <el-form-item label="资产编号" prop="MeterAssetsCode" >
-            <el-input v-model.lazy.trim="formData.MeterAssetsCode"
-                      @change="valueChange"
+          <el-form-item label="资产编号" prop="assetsCode" >
+            <el-input v-model.lazy.trim="formData.assetsCode"
+                      @change="EnableDevice"
                       size="medium"
                       placeholder="请输入"
                       :disabled="operationType!='add'"></el-input>
+            <span style="color: red">{{deviceType}}</span>
           </el-form-item>
-          <el-form-item label="栋/街/层" prop="FifthRegionName" >
-            <el-input v-model="formData.FifthRegionName" size="medium" placeholder="请输入"></el-input>
+          <el-form-item label="栋/街/层" prop="building">
+            <el-select
+              v-model="formData.building"
+              filterable
+              remote
+              reserve-keyword
+              placeholder="请输入关键词"
+              :remote-method="getBuildings"
+              :loading="buildingLoading"
+              size="medium">
+              <el-option
+                v-for="item in buildings"
+                :key="item.building"
+                :label="item.building"
+                :value="item.building">
+              </el-option>
+            </el-select>
           </el-form-item>
-          <el-form-item label="房间号" prop="HouseRegionName" >
-            <el-input v-model="formData.HouseRegionName" size="medium" placeholder="请输入"></el-input>
+
+          <el-form-item label="房间号" prop="houseId">
+            <el-select
+              v-model="formData.houseId"
+              filterable
+              remote
+              reserve-keyword
+              placeholder="请输入关键词"
+              :remote-method="getHouses"
+              :loading="houseLoading"
+              size="medium">
+              <el-option
+                v-for="item in houses"
+                :key="item.id"
+                :label="item.houseNo"
+                :value="item.id">
+              </el-option>
+            </el-select>
           </el-form-item>
-          <el-form-item label="集中器地址" prop="LogicAddr" >
-            <el-input v-model="formData.LogicAddr" size="medium" placeholder="请输入"></el-input>
-          </el-form-item>
-          <el-form-item label="安装地址" prop="InstallAddr" >
-            <el-input v-model="formData.InstallAddr" size="medium" placeholder="请输入"></el-input>
+
+          <el-form-item label="安装地址" prop="installAddress" >
+            <el-input v-model="formData.installAddress" size="medium" placeholder="请输入"></el-input>
           </el-form-item>
 
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button @click="resetForm">重置</el-button>
-          <el-button type="primary" @click="submitForm">立即创建</el-button>
+          <el-button @click="resetForm" :disabled="resetBtnDisabled">重置</el-button>
+          <el-button type="primary" @click="submitForm" :disabled="sureBtnDisabled">确定</el-button>
         </div>
       </el-dialog>
 
-      <div class="tableMessage">
+      <div class="tableMessage" v-loading="loading">
         <el-table
           stripe
           border
@@ -84,14 +114,14 @@
               <el-button type="text"
                          size="small"
                          style="color: #55a532"
-                         @click="showChangeDialog">
+                         @click="updateBtnClick(scope.row)">
                 <i class="el-icon-edit"></i>
                 修改
               </el-button>
               <el-button type="text"
                          size="small"
                          style="color: #df5000"
-                         @click="">
+                         @click="deleteMeterInfo(scope.row)">
                 <i class="el-icon-delete"></i>
                 删除
               </el-button>
@@ -119,147 +149,71 @@
           loading:false,
           currentPage:1,
           totalLength:1,
-          queryMeterAssetsCode:'',//搜索的资产编号
-          message:[
-            {
-              MeterAddr:1,
-              FifthRegionName:1,
-              HouseRegionName:'1',
-              LogicAddr:'1',
-              RunStatus:'1',
-              MeterKindId:'1',
-              MeterAssetsCode:'1',
-              Seq:'1',
-              MeasureId:'1',
-              BaudRate:'1',
-              CommPort:'1',
-              CommProtocol:'1',
-              CommPwd:'1',
-              RateNum:'1',
-              IntegerNum:'1',
-              CollectorAddr:'1',
-              BigClassNo:'1',
-              SmallClassNo:'1',
-              PayType:'1',
-              SoftVer:'1',
-              HardVer:'1',
-              InstallAddr:'1',
-              InstallTime:'1'
-            }
-          ],
+          queryAssetsCode:'',//搜索的资产编号
+          deviceType:'',//设备类型
+          message:[],
           messageName:[
             {
-              label:'表地址',
-              name:'MeterAddr',
+              label:'资产编号',
+              name:'assetsCode',
             },
             {
-              label:'所属区域',
-              name:'FifthRegionName',
+              label:'栋/街/层',
+              name:'building',
             },
             {
               label:'所属房间',
-              name:'HouseRegionName',
-            },
-            {
-              label:'所属集中器',
-              name:'LogicAddr',
+              name:'houseNo',
             },
             {
               label:'运行状态',
-              name:'RunStatus',
-            },
-            {
-              label:'表计类型',
-              name:'MeterKindId',
-            },
-            {
-              label:'资产编号',
-              name:'MeterAssetsCode',
-            },
-            {
-              label:'表装置序号',
-              name:'Seq',
-            },
-            {
-              label:'测量点符号',
-              name:'MeasureId',
-            },
-            {
-              label:'波特率',
-              name:'BaudRate',
-            },
-            {
-              label:'端口号',
-              name:'CommPort'
-            },
-            {
-              label:'协议',
-              name:'CommProtocol'
-            },
-            {
-              label:'通信密码',
-              name:'CommPwd'
+              name:'runStatus',
             },
             {
               label:'费率数',
               name:'RateNum'
             },
             {
-              label:'示数整数位个数',
-              name:'IntegerNum'
-            },
-            {
-              label:'示数整数位个数',
-              name:'IntegerNum'
-            },
-            {
-              label:'采集器地址',
-              name:'CollectorAddr'
-            },
-            {
-              label:'用户大类号',
-              name:'BigClassNo'
-            },
-            {
-              label:'用户小类号',
-              name:'SmallClassNo'
-            },
-            {
               label:'付费类型',
-              name:'PayType'
+              name:'payType'
             },
             {
               label:'软件版本',
-              name:'SoftVer'
+              name:'softVer'
             },
             {
               label:'硬件版本',
-              name:'HardVer'
+              name:'hardVer'
             },
             {
               label:'安装地址',
-              name:'InstallAddr'
+              name:'installAddress'
             },
             {
               label:'安装时间',
-              name:'InstallTime'
+              name:'installTime'
             }
 
           ],
           dialogFormVisible:false,
           formData:{
-            MeterAssetsCode:'',//资产编号
-            FifthRegionName:'',//栋/街/层
-            HouseRegionName:'',//房间号
-            LogicAddr:'',//集中器地址
-            InstallAddr:'',//安装地址
-
+            assetsCode:'',//资产编号
+            building:'',//栋/街/层
+            houseId:'',//房间号
+            installAddress:'',//安装地址
+            userId:window.sessionStorage.getItem('userId')
           },
+          buildings:[],//可选择的楼栋列表
+          buildingLoading:false,
+          houses:[],//可选择的房间列表
+          houseLoading:false,
           operationType:'add',//操作类型，add 或者 update
+          resetBtnDisabled:false,
+          sureBtnDisabled:true,
         }
       },
       mounted(){
-
+        this.getPageList()
       },
       methods:{
         //设置表格
@@ -272,27 +226,29 @@
         },
         //分页
         handleCurrentChange:function(index){
-
+          this.getPageList(this.queryAssetsCode,index)
         },
 
-
-        /**
-         *
-         */
-        valueChange:function(){
-          console.log('输入值改变了')
-        },
 
         //点击单个添加按钮
-        showAddDialog:function () {
+        addBtnClick:function () {
           this.operationType = 'add'
+          // this.resetForm()
           this.dialogFormVisible = true
+
+          setTimeout(_=>{
+            this.resetForm()
+          },10)
+
         },
 
         //点击修改按钮
-        showChangeDialog:function(){
+        updateBtnClick:function(data){
           this.operationType = 'update'
           this.dialogFormVisible = true
+         this.resetBtnDisabled = true
+          this.formData.assetsCode = data.assetsCode
+          this.EnableDevice(data.assetsCode)
         },
 
         /**
@@ -301,9 +257,9 @@
         submitForm:function () {
           this.dialogFormVisible = false
           if (this.operationType == 'add'){
-
+            this.saveOrUpdateMeterInfo(this.api.saveMeterInfo)
           }else if(this.operationType == 'update'){
-
+            this.saveOrUpdateMeterInfo(this.api.updateMeterInfo)
           }
         },
 
@@ -311,8 +267,163 @@
          * 重置
          */
         resetForm:function () {
+          this.deviceType = ''
+          this.sureBtnDisabled = true
           this.$refs['formData'].resetFields()
         },
+
+        /**
+         *获取表计档案列表
+         */
+        getPageList:function (assetsCode='',pageIndex=1,pageSize=10) {
+          var token = window.sessionStorage.getItem('token')
+          var params = {
+            userId:window.sessionStorage.getItem('userId'),
+            assetsCode:assetsCode,
+            installAddress:'',
+            pageIndex:pageIndex,
+            pageSize:pageSize
+          }
+          this.loading = true
+          console.log(params)
+          this.http.get(this.api.baseUrl + this.api.getPageList,params,token)
+            .then(result=>{
+              this.loading = false
+              console.log(result)
+              if (result.msg == 'success') {
+                this.message = result.page
+                this.totalLength = result.recordes
+              }else{
+                this.$message.error(result.msg);
+              }
+            })
+
+        },
+
+        /**
+         * 单个添加/修改  表计
+         */
+        saveOrUpdateMeterInfo:function (url) {
+          console.log(this.formData)
+          if (this.formData.assetsCode == '' || this.formData.houseId == '' ||
+            this.formData.installAddress == '') {
+            this.$message.warning('请填写好信息');
+            return
+          }
+
+          var token = window.sessionStorage.getItem('token')
+
+          this.loading = true
+          console.log(this.formData)
+          this.http.post(this.api.baseUrl + url,this.formData,token)
+            .then(result=>{
+              this.loading = false
+              console.log(result)
+              if (result.msg == 'success') {
+                this.$message.success('操作成功');
+                this.getPageList(this.queryAssetsCode,this.currentPage)
+              }else{
+                this.$message.error(result.msg);
+              }
+            })
+        },
+
+        /**
+         * 删除表计档案
+         */
+        deleteMeterInfo:function(data){
+
+          this.$confirm('此操作将永久删除该档案, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            //点击确定
+            var token = window.sessionStorage.getItem('token')
+            var params = {
+              ids:data.id
+            }
+            this.loading = true
+
+            this.http.get(this.api.baseUrl + this.api.deleteMeterInfo,params,token)
+              .then(result=>{
+                this.loading = false
+                if (result.msg == 'success') {
+                  this.$message.success('删除成功')
+                  this.getPageList(this.queryAssetsCode,this.currentPage)
+                }else{
+                  this.$message.error(result.msg);
+                }
+              })
+
+          }).catch(() => {
+            //点击取消
+          })
+
+
+        },
+
+
+        /**
+         * 获取楼栋列表
+         */
+        getBuildings:function (buildingName) {
+          if(buildingName ==''){
+            this.buildings = []
+            return
+          }
+          this.houses = []
+          this.formData.houseId = ''
+          this.buildingLoading = true
+          this.getBuildingList(buildingName).then(result=>{
+            this.buildingLoading = false
+            console.log(result)
+            this.buildings = result.page
+          })
+        },
+
+        /**
+         * 获取楼栋对应的房间
+         */
+        getHouses:function(houseNo){
+          if(houseNo =='' || this.formData.building == ''){
+            this.houses = []
+            return
+          }
+
+          this.houseLoading = true
+
+          this.getHouseByBuilding(this.formData.building,houseNo).then(result=>{
+            this.houseLoading = false
+            console.log(result)
+            this.houses = result.page
+          })
+
+        },
+
+        /**
+         * 输入的资产编号发生改变调用
+         * 根据资产编号获取对应的种类
+         */
+        EnableDevice:function (assetsCode) {
+          var token = window.sessionStorage.getItem('token')
+          var params = {
+            userId:window.sessionStorage.getItem('userId'),
+            DeviceId:assetsCode
+          }
+          console.log(params)
+          this.http.get(this.api.baseUrl + this.api.EnableDevice,params,token)
+            .then(result=>{
+              console.log(result)
+              if (result.status == 'ok'){
+                this.deviceType = this.getDeviceType(result.data.DeviceType)
+                this.sureBtnDisabled = false
+              }else{
+                this.deviceType = result.data
+                this.sureBtnDisabled = true
+              }
+            })
+        }
       }
     }
 </script>

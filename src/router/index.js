@@ -11,14 +11,11 @@ import choseLists from '@/components/choseLists'
 import communityManager from '@/components/superAdmin/communityManager'
 //账户管理
 import accountManager from '@/components/superAdmin/accountManager'
-
-
 /**
  * 收费方案
  */
 //电费方案
 import electricityScheme from '@/components/chargeScheme/electricityScheme'
-
 /**
  * 档案管理
  */
@@ -28,11 +25,19 @@ import roomManager from '@/components/fileManager/roomManager'
 import gatewayManager from '@/components/fileManager/gatewayManager'
 //表计管理
 import meterManager from '@/components/fileManager/meterManager'
-
 /**
  * 事务办理
  */
+//设备控制
 import equipmentControl from '@/components/transaction/equipmentControl'
+import remoteRecharge from '@/components/transaction/remoteRecharge'
+/**
+ * 统计查询
+ */
+//冻结数据
+import freezingData from '@/components/statisticalQuery/freezingData'
+
+
 
 Vue.use(Router)
 
@@ -83,6 +88,16 @@ export default new Router({
           path:'equipmentControl',
           name:'equipmentControl',
           component:equipmentControl
+        },
+        {
+          path:'remoteRecharge',
+          name:'remoteRecharge',
+          component:remoteRecharge
+        },
+        {
+          path:'freezingData',
+          name:'freezingData',
+          component:freezingData,
         }
 
       ]
@@ -91,6 +106,6 @@ export default new Router({
       path:'/',
       name:'login',
       component:login
-    }
+    },
   ]
 })

@@ -8,15 +8,15 @@
         size="medium">
       </el-input>
       <el-button type="primary" size="medium">查询</el-button>
-      <el-button type="primary" size="medium" @click="dialogFormVisible = true">新增</el-button>
+      <el-button type="primary" size="medium" @click="addBtnClick">新增</el-button>
     </div>
 
     <!--弹框显示新增操作-->
     <el-dialog title="增加账户" :visible.sync="dialogFormVisible">
       <el-form :model="formData"  ref="formData" label-width="100px" class="myForm">
 
-        <el-form-item label="方案名" prop="schemeName" >
-          <el-input v-model="formData.schemeName" size="medium" placeholder="请输入方案名"></el-input>
+        <el-form-item label="方案名" prop="shcemeName" >
+          <el-input v-model="formData.shcemeName" size="medium" placeholder="请输入方案名"></el-input>
         </el-form-item>
 
         <el-form-item label="方案类型" prop="shcemeType">
@@ -33,13 +33,13 @@
         <el-form-item label="复费率价1" prop="price1">
           <el-input v-model="formData.price1" size="medium" placeholder="请输入" :disabled="formData.shcemeType != 1"></el-input>
         </el-form-item>
-        <el-form-item label="复费率价2" prop="price1">
+        <el-form-item label="复费率价2" prop="price2">
           <el-input v-model="formData.price2" size="medium" placeholder="请输入" :disabled="formData.shcemeType != 1"></el-input>
         </el-form-item>
-        <el-form-item label="复费率价3" prop="price1">
+        <el-form-item label="复费率价3" prop="price3">
           <el-input v-model="formData.price3" size="medium" placeholder="请输入" :disabled="formData.shcemeType != 1"></el-input>
         </el-form-item>
-        <el-form-item label="复费率价4" prop="price1">
+        <el-form-item label="复费率价4" prop="price4">
           <el-input v-model="formData.price4" size="medium" placeholder="请输入" :disabled="formData.shcemeType != 1"></el-input>
         </el-form-item>
 
@@ -64,27 +64,23 @@
           width="50">
         </el-table-column>
         <el-table-column
-          prop="name"
+          prop="feeName"
           label="方案名">
         </el-table-column>
         <el-table-column
-          prop="type"
-          label="种类">
-        </el-table-column>
-        <el-table-column
-          prop="price1"
+          prop="fee1"
           label="价格1">
         </el-table-column>
         <el-table-column
-          prop="price2"
+          prop="fee2"
           label="价格2">
         </el-table-column>
         <el-table-column
-          prop="price3"
+          prop="fee3"
           label="价格3">
         </el-table-column>
         <el-table-column
-          prop="price4"
+          prop="fee4"
           label="价格4">
         </el-table-column>
         <el-table-column
@@ -94,13 +90,14 @@
             <el-button type="text"
                        size="small"
                        style="color: #55a532"
-                       @click="dialogFormVisible = true">
+                       @click="updateBtnClick(scope.row)">
               <i class="el-icon-edit"></i>
               修改
             </el-button>
             <el-button type="text"
                        size="small"
-                       style="color: #df5000">
+                       style="color: #df5000"
+                       @click="deleteScheme(scope.row)">
               <i class="el-icon-delete"></i>
               删除
             </el-button>
@@ -108,6 +105,14 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <el-pagination
+        @current-change="handleCurrentChange"
+        :current-page.sync="currentPage"
+        :page-size="10"
+        layout="total, prev, pager, next,jumper"
+        :total="totalLength">
+      </el-pagination>
     </div>
   </div>
 </template>
@@ -118,35 +123,26 @@
         return{
           loading:false,
           dialogFormVisible:false,
-          message:[
-            {
-              name:'方案1',
-              type:'单费率',
-              price1:1,
-              price2:1,
-              price3:1,
-              price4:1,
-
-            }
-          ],
+          totalLength:1,//总数量
+          currentPage:1,//当前页面
+          message:[],
           formData:{
             shcemeName:'',
             shcemeType:0,
             singlePrice:'',//单费率
             price1:'',
             price2:'',
-            price13:'',
+            price3:'',
             price4:'',
+            id:'',//方案id
           },//表单参数
           singleDisabled:false,//单费率输入框能否输入
+          operationType:'add',//操作类型 add update
         }
       },
-      watch:{
-        formData:function(newValue){
-          console.log("lll")
-        }
+      mounted(){
+        this.getSchemeList()
       },
-      mounted(){},
       methods:{
         //设置表格
         tableHeadStyle:function ({row, column, rowIndex, columnIndex}) {
@@ -157,18 +153,20 @@
           return 'text-align:center;padding:2px;'
         },
 
+        //页面控制器页数改变
+        handleCurrentChange:function(index){
+
+        },
+
         /**
          * 提交表单
          */
         submitForm:function () {
-          var token = window.sessionStorage.getItem('token')
-          this.dialogFormVisible = true
-          // this.loading = true
-          // this.http.post(this.api.baseUrl + this.api.addSysUser,this.formData,token)
-          //   .then(result=>{
-          //     this.loading = false
-          //     console.log(result)
-          //   })
+          if (this.operationType == 'add'){
+            this.saveOrUpdateScheme(this.api.saveScheme)
+          } else if(this.operationType == 'update'){
+            this.saveOrUpdateScheme(this.api.updateScheme)
+          }
         },
 
         /**
@@ -179,9 +177,146 @@
         },
 
         /**
-         * 新增方案
+         * 获取方案列表
          */
-        addScheme:function () {
+        getSchemeList:function(){
+          var token = window.sessionStorage.getItem('token')
+          var params = {
+            userId:window.sessionStorage.getItem('userId')
+          }
+          this.loading = true
+          this.http.get(this.api.baseUrl + this.api.getSchemeList,params,token)
+            .then(result=>{
+              this.loading = false
+              console.log(result)
+              if(result.msg == 'success'){
+                this.message = result.page
+                this.totalLength = result.recordes
+              }else{
+                this.$message.error(result.msg);
+              }
+            })
+
+        },
+
+        /**
+         * 点击新增按钮
+         */
+        addBtnClick:function(){
+          this.dialogFormVisible = true
+          this.operationType = 'add'
+          this.formData.id = ''
+        },
+
+        /**
+         * 点击修改按钮
+         */
+        updateBtnClick:function(data){
+          this.dialogFormVisible = true
+          this.operationType = 'update'
+
+          this.formData.shcemeName = data.feeName
+          this.formData.id = data.id
+          if (data.fee1 == data.fee2 && data.fee2 == data.fee3 && data.fee3 == data.fee4){
+            //单费率
+            this.formData.shcemeType = 0
+            this.formData.singlePrice = data.fee1
+            this.formData.price1 = ''
+            this.formData.price2 = ''
+            this.formData.price3 = ''
+            this.formData.price4 = ''
+          } else{
+            //复费率
+            this.formData.shcemeType = 1
+            this.formData.singlePrice = ''
+            this.formData.price1 = data.fee1
+            this.formData.price2 = data.fee2
+            this.formData.price3 = data.fee3
+            this.formData.price4 = data.fee4
+          }
+        },
+
+        /**
+         * 新增、修改 方案
+         */
+        saveOrUpdateScheme:function (url) {
+          if (this.formData.shcemeType == 0 ){
+            //单费率
+            if(this.formData.shcemeName.length == 0 || this.formData.singlePrice.length == 0){
+              this.$message.warning('请填写完整的参数');
+              return
+            }
+          }else{
+            if(this.formData.shcemeName.length == 0 || this.formData.price1.length == 0 ||
+              this.formData.price2.length == 0 || this.formData.price3.length == 0 ||
+              this.formData.price4.length == 0){
+              this.$message.warning('请填写完整的参数');
+              return
+            }
+          }
+
+          var token = window.sessionStorage.getItem('token')
+          var params = {
+            userId:window.sessionStorage.getItem('userId'),
+            feeName:this.formData.shcemeName,
+            fee1:this.formData.shcemeType == 0 ? this.formData.singlePrice : this.formData.price1,
+            fee2:this.formData.shcemeType == 0 ? this.formData.singlePrice : this.formData.price2,
+            fee3:this.formData.shcemeType == 0 ? this.formData.singlePrice : this.formData.price3,
+            fee4:this.formData.shcemeType == 0 ? this.formData.singlePrice : this.formData.price4,
+            id:this.formData.id,
+          }
+          this.dialogFormVisible = false
+          this.loading = true
+          this.http.post(this.api.baseUrl + url,params,token)
+            .then(result=>{
+              this.loading = false
+              console.log(result)
+              if(result.msg == 'success'){
+                this.$message.success('操作成功');
+                this.getSchemeList()
+              }else{
+                this.$message.error(result.msg);
+              }
+            })
+
+
+        },
+
+        /**
+         * 删除方案
+         */
+        deleteScheme:function (data) {
+
+          this.$confirm('此操作将永久删除该方案', '是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            //点击确定
+            var token = window.sessionStorage.getItem('token')
+            var params = {
+              ids:data.id
+            }
+            this.http.get(this.api.baseUrl + this.api.deleteScheme,params,token)
+              .then(result=>{
+                console.log(result)
+                if (result.msg == 'success') {
+                  this.$message.success('删除成功');
+                  this.getSchemeList()
+                }else{
+                  this.$message.error(result.msg);
+                }
+              })
+
+          }).catch(() => {
+            //点击取消
+          });
+        },
+
+        /**
+         * 修改方案
+         */
+        updateScheme:function () {
 
         }
       }
@@ -208,4 +343,10 @@
       width: 300px;
     }
   }
+
+  .el-pagination{
+    margin-top: 20px;
+    text-align: center;
+  }
+
 </style>

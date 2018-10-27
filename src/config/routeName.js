@@ -1,3 +1,6 @@
+import HTTP from '@/axios/http'
+import API from '@/axios/api'
+
 //获取路由名
 function getName(name) {
   let routeName = ''
@@ -22,6 +25,12 @@ function getName(name) {
       break;
     case '设备控制':
       routeName='equipmentControl';
+      break;
+    case '冻结查询':
+      routeName='freezingData';
+      break;
+    case '远程充值':
+      routeName='remoteRecharge';
       break;
     default:
       routeName='choseLists'
@@ -90,29 +99,128 @@ function getUserStatus(index) {
   return userStatus
 }
 
-//获取设备类型
+//获取网关类型
 function getCommonType(index) {
   var commonType = ''
   switch (index) {
-    case 0:
-      userStatus = 'NS';
-      break;
     case 1001:
-      userStatus = 'RS485';
+      commonType = 'RS485';
       break;
     case 2001:
-      userStatus = 'zaibo';
+      commonType = 'zaibo';
       break;
     case 3001:
-      userStatus = 'Lora';
+      commonType = 'Lora';
       break;
     case 4001:
-      userStatus = 'LoraWan';
+      commonType = 'LoraWan';
       break;
     default:
-      userStatus = '未知'
+      commonType = '未知'
   }
   return commonType
+}
+
+//获取设备类型
+function getDeviceType(index) {
+  var deviceType = ''
+  switch (index) {
+    case 1001:
+      deviceType = '集中器';
+      break;
+    case 1501:
+      deviceType = '网关';
+      break;
+    case 2001:
+      deviceType = '电表';
+      break;
+    case 2501:
+      deviceType = '水表';
+      break;
+    case 3001:
+      deviceType = '路灯';
+      break;
+    default:
+      deviceType = '未知'
+  }
+  return deviceType
+}
+
+//获取社区的楼栋列表
+function getBuildingList(building){
+  var token = window.sessionStorage.getItem('token')
+  var params = {
+    userId:window.sessionStorage.getItem('userId'),
+    building:building
+  }
+
+  return  new Promise((resolve, reject)=>{
+
+    HTTP.get(API.baseUrl + API.getBuildingList,params,token)
+      .then(result=>{
+        resolve(result)
+      })
+  })
+
+}
+
+//获取对应楼栋的房间列表
+function getHouseByBuilding(building,houseNo) {
+  var token = window.sessionStorage.getItem('token')
+  var params = {
+    userId:window.sessionStorage.getItem('userId'),
+    building:building,
+    houseNo:houseNo
+  }
+
+  return  new Promise((resolve, reject)=>{
+
+    HTTP.get(API.baseUrl + API.getHouseByBuilding,params,token)
+      .then(result=>{
+        resolve(result)
+      })
+  })
+}
+
+//XXXX-XX-XX 年月日格式
+function timeFormat1(date){
+  try {
+    var year = date.getFullYear()
+    var month = date.getMonth() + 1
+    var day = date.getDate()
+    return [year, month, day].map(formatNumber).join('-')
+  }catch (e) {
+    return date
+  }
+}
+
+//XXXX-XX 年月格式
+function timeFormat2(date){
+  try {
+    var year = date.getFullYear()
+    var month = date.getMonth() + 1
+    var day = date.getDate()
+    return [year, month].map(formatNumber).join('-')
+  }catch (e) {
+    return date
+  }
+}
+
+//XXXX-XX 上一个月的年月
+function timeFormat3(date){
+  try {
+    var year = date.getFullYear()
+    var month = date.getMonth()
+    var day = date.getDate()
+    return [year, month].map(formatNumber).join('-')
+  }catch (e) {
+    return date
+  }
+}
+
+function formatNumber(n) {
+  n = n.toString()
+  return n[1] ? n : '0' + n
 }
 
 export default {
@@ -121,5 +229,12 @@ export default {
     Vue.prototype.getUserType = getUserType
     Vue.prototype.getUserPost = getUserPost
     Vue.prototype.getUserStatus = getUserStatus
+    Vue.prototype.getCommonType = getCommonType
+    Vue.prototype.getDeviceType = getDeviceType
+    Vue.prototype.getBuildingList = getBuildingList
+    Vue.prototype.getHouseByBuilding = getHouseByBuilding
+    Vue.prototype.timeFormat1 = timeFormat1
+    Vue.prototype.timeFormat2 = timeFormat2
+    Vue.prototype.timeFormat3 = timeFormat3
   }
 }

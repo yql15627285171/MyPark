@@ -43,7 +43,6 @@
             </el-option>
           </el-select>
         </el-form-item>
-
         <el-form-item label="用户岗位" prop="userPost">
           <el-radio-group v-model="formData.userPost">
             <el-radio :label="0">主管</el-radio>
@@ -331,6 +330,7 @@
         }
 
         console.log(params)
+
         this.http.post(this.api.baseUrl + this.api.addSysUser,params,token)
           .then(result=>{
             this.loading = false
@@ -374,7 +374,7 @@
 
         }).catch(() => {
           //点击取消
-        });
+        })
 
       },
 
