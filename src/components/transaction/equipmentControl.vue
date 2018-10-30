@@ -222,7 +222,6 @@
               this.$message.error(result.msg);
             }
           })
-
       },
 
       /**
@@ -255,8 +254,6 @@
               this.$message.error(result.msg)
             }
           })
-
-
       },
 
       /**
@@ -280,15 +277,14 @@
           .then(result=>{
             this.loading = false
             console.log(result)
-            // if (result.status== 'ok') {
-            //   this.$message.success('操作成功')
-            //   this.getMeterStateList()
-            // }else{
-            //   this.$message.error(result.data)
-            // }
+            if (result.msg == 'success') {
+              this.$message.success('操作成功')
+              this.getMeterStateList()
+            }else{
+              this.$message.error(result.msg)
+            }
           })
       }
-
 
     },
 
@@ -302,8 +298,6 @@
     padding: 20px;
     margin-top: 30px;
   }
-
-
 
   .condition{
     overflow: hidden;

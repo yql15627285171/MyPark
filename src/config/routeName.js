@@ -32,6 +32,9 @@ function getName(name) {
     case '远程充值':
       routeName='remoteRecharge';
       break;
+    case '充值记录':
+      routeName='rechargeRecord';
+      break;
     default:
       routeName='choseLists'
   }
@@ -147,7 +150,7 @@ function getDeviceType(index) {
 }
 
 //获取社区的楼栋列表
-function getBuildingList(building){
+function getBuildingList(building=''){
   var token = window.sessionStorage.getItem('token')
   var params = {
     userId:window.sessionStorage.getItem('userId'),
@@ -165,13 +168,15 @@ function getBuildingList(building){
 }
 
 //获取对应楼栋的房间列表
-function getHouseByBuilding(building,houseNo) {
+function getHouseByBuilding(building='',houseNo='') {
   var token = window.sessionStorage.getItem('token')
   var params = {
     userId:window.sessionStorage.getItem('userId'),
-    building:building,
+    Building:building,
     houseNo:houseNo
   }
+
+  console.log(params)
 
   return  new Promise((resolve, reject)=>{
 

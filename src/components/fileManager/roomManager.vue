@@ -271,8 +271,10 @@
               ids:data.id
             }
             console.log(params)
+            this.loading = true
             this.http.get(this.api.baseUrl + this.api.deleteCommHouseInfo,params,token)
               .then(result=>{
+                this.loading = false
                 if (result.msg == 'success') {
                   this.$message.success('删除成功');
                   this.getCommHouseList(this.currentPage,10,this.houseNo)

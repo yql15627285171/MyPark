@@ -19,7 +19,6 @@
       </div>
       <div class="tableMessage" v-loading="loading">
         <el-table
-          ref="multipleTable"
           :data="message"
           :header-cell-style="tableHeadStyle"
           :cell-style="tableRowStyle"
@@ -88,64 +87,64 @@
           ],
           messageName:[
             {
+              label:'栋/街/层',
+              id:'building',
+            },
+            {
               label:'房间信息',
-              id:'FifthHouseRegionName',
+              id:'houseNo',
             },
             {
-              label:'集中器地址',
-              id:'LogicAddr',
-            },
-            {
-              label:'表计地址',
-              id:'MeterAddr',
+              label:'资产编号',
+              id:'deviceid',
             },
             {
               label:'表底示值_总',
-              id:'FreezeTotal',
+              id:'fp1',
             },
             {
               label:'日用电量',
-              id:'PowerTotal',
+              id:'p',
             },
             {
               label:'冻结时间',
-              id:'FreezeDate'
+              id:'settlementdate1'
             },
             {
               label:'抄表时间',
-              id:'ReadDataTime'
+              id:'date'
             },
             {
               label:'表底示值_尖',
-              id:'Freeze1'
+              id:'fp11'
             },
             {
               label:'表底示值_峰',
-              id:'Freeze2'
+              id:'fp12'
             },
             {
               label:'表底示值_平',
-              id:'Freeze3'
+              id:'fp13'
             },
             {
               label:'表底示值_谷',
-              id:'Freeze4'
+              id:'fp14'
             },
             {
               label:'日用电量_尖',
-              id:'Power1'
+              id:'p1'
             },
             {
               label:'日用电量_峰',
-              id:'Power2'
+              id:'p2'
             },
             {
               label:'日用电量_平',
-              id:'Power3'
+              id:'p3'
             },
             {
               label:'日用电量_谷',
-              id:'Power4'
+              id:'p4'
             }
           ],
           startDate:'',
@@ -157,7 +156,6 @@
         var startTime = new Date().setTime(new Date().getTime() - 3600 * 1000 * 24 * 3)
         this.endDate = this.timeFormat1(nowTime)
         this.startDate = this.timeFormat1(new Date(startTime))
-
         this.getDayPageList()
       },
       methods:{
@@ -182,7 +180,7 @@
 
           var params = {
             userId:window.sessionStorage.getItem('userId'),
-            dateBegin:this.timeFormat1(this.startDate) ,
+            dateBegin:this.timeFormat1(this.startDate),
             dateEnd:this.timeFormat1(this.endDate),
             pageIndex:this.currentPage,
             pageSize:10,

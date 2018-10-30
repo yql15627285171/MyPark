@@ -1,15 +1,15 @@
 <!--远程充值-->
 <template>
-    <div class="rechargeForm">
+    <div class="rechargeForm" v-loading="loading">
       <el-form  label-width="100px">
         <el-form-item label='栋/街/层：'>
-          <el-input v-model='building' disabled placeholder='请选择栋/街/层' size="medium"></el-input>
+          <el-input disabled placeholder='请选择栋/街/层' size="medium" v-model="choseBuilding"></el-input>
         </el-form-item>
         <el-form-item label='房间号：'>
-          <el-input v-model='houseNo' disabled placeholder='请选择房间号' size="medium"></el-input>
+          <el-input disabled placeholder='请选择房间号' size="medium" v-model="choseHouseNo"></el-input>
         </el-form-item>
         <el-form-item label="类型：" >
-          <el-select v-model="type"
+          <el-select v-model="transaction"
                      placeholder="请选择交易类型"
                      clearable
                      size="medium">
@@ -23,7 +23,7 @@
         </el-form-item>
       </el-form>
       <div >
-        <el-button type="primary" size="medium">确定</el-button>
+        <el-button type="primary" size="medium" @click="Recharge">确定</el-button>
       </div>
 
     </div>
@@ -31,8 +31,13 @@
 
 <script>
     export default {
+      props:{
+        choseBuilding:String,
+        choseHouseNo:String
+      },
       data(){
         return{
+          loading:false,
           TransactionMethod:[
             {
               label:'现金',
@@ -62,17 +67,59 @@
               label:'其他',
               value:'9'
             },],// 交易方式
-          building:'',//栋街层
-          houseNo:'',//房间号
-          type:'',//种类
+          transaction:'',
           money:'',//金额
         }
       },
       mounted(){
-        console.log('远程充值')
+
       },
       methods:{
+        //远程充值
+        Recharge:function () {
+          if (this.transaction == '' || this.money == ''){
+            this.$message.warning('请填写好信息')
+            return
+          }
 
+          this.$confirm(`是否要充值${this.money}元`, '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            //点击确定
+            var token = window.sessionStorage.getItem('token')
+
+            var params = {
+              userId:window.sessionStorage.getItem('userId'),
+              building:this.choseBuilding,
+              houseNo:this.choseHouseNo,
+              TransactionAmount:this.money,
+              TransactionMode:2,
+              TransactionMethod:this.transaction
+            }
+            console.log(params)
+            this.loading = true
+            this.http.get(this.api.baseUrl + this.api.Recharge,params,token,110000).then(result=>{
+              this.loading = false
+              console.log(result)
+              if (result.msg == 'success') {
+                this.$message.success('充值成功')
+                this.$store.dispatch('setCurrState',result.currState)
+                this.$store.dispatch('setLastRecord',result.LastRecord)
+                this.$emit('getCardType',result.CardType,this.choseBuilding,this.choseHouseNo)
+              }else{
+                this.$message.error(result.msg);
+              }
+            })
+
+
+          }).catch(() => {
+            //点击取消
+          })
+
+
+        }
       }
     }
 </script>

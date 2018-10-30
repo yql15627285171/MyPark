@@ -86,88 +86,64 @@
         ],
         messageName:[
           {
+            label:'栋/街/层',
+            id:'building',
+          },
+          {
             label:'房间信息',
-            id:'FifthHouseRegionName',
+            id:'houseNo',
           },
           {
-            label:'月结时间',
-            id:'FreezeMonth',
+            label:'资产编号',
+            id:'deviceid',
           },
           {
-            label:'月用电总量',
-            id:'MonthPowerTotal',
+            label:'表底示值_总',
+            id:'fp1',
           },
           {
-            label:'结算日时间',
-            id:'FreezeDate',
+            label:'月用电量',
+            id:'p',
           },
           {
-            label:'结算日总值',
-            id:'FreezeTotal',
+            label:'冻结时间',
+            id:'settlementdate1'
           },
           {
-            label:'结算日时间',
-            id:'LastFreezeDate',
+            label:'抄表时间',
+            id:'month'
           },
           {
-            label:'上结算日总值',
-            id:'LastFreezeTotal',
+            label:'表底示值_尖',
+            id:'fp11'
           },
           {
-            label:'集中器地址',
-            id:'LogicAddr',
+            label:'表底示值_峰',
+            id:'fp12'
           },
           {
-            label:'表计地址',
-            id:'MeterAddr',
+            label:'表底示值_平',
+            id:'fp13'
           },
           {
-            label:'结算日值_尖',
-            id:'Freeze1',
-          },
-          {
-            label:'结算日值_峰',
-            id:'Freeze2',
-          },
-          {
-            label:'结算日值_平',
-            id:'Freeze3',
-          },
-          {
-            label:'结算日值_谷',
-            id:'Freeze4',
-          },
-          {
-            label:'上结算日值_尖',
-            id:'LastFreeze1',
-          },
-          {
-            label:'上结算日值_峰',
-            id:'LastFreeze2',
-          },
-          {
-            label:'上结算日值_平',
-            id:'LastFreeze3',
-          },
-          {
-            label:'上结算日值_谷',
-            id:'LastFreeze4',
+            label:'表底示值_谷',
+            id:'fp14'
           },
           {
             label:'月用电量_尖',
-            id:'MonthPower1',
+            id:'p1'
           },
           {
             label:'月用电量_峰',
-            id:'MonthPower2',
+            id:'p2'
           },
           {
             label:'月用电量_平',
-            id:'MonthPower3',
+            id:'p3'
           },
           {
             label:'月用电量_谷',
-            id:'MonthPower4',
+            id:'p4'
           }
         ],
         startMonth:'',
@@ -177,6 +153,8 @@
     mounted(){
       this.startMonth = this.timeFormat3(new Date())
       this.endMonth = this.timeFormat2(new Date())
+
+      this.getMonthPageList()
     },
     methods:{
       //设置表格

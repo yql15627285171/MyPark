@@ -39,3 +39,4 @@ Vue.use(routeName)
 import ICCard from './ICCard'
 Vue.prototype.ICCard = ICCard
 
+

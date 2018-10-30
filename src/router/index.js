@@ -36,7 +36,8 @@ import remoteRecharge from '@/components/transaction/remoteRecharge'
  */
 //冻结数据
 import freezingData from '@/components/statisticalQuery/freezingData'
-
+//充值记录
+import rechargeRecord from '@/components/statisticalQuery/rechargeRecord'
 
 
 Vue.use(Router)
@@ -98,8 +99,12 @@ export default new Router({
           path:'freezingData',
           name:'freezingData',
           component:freezingData,
+        },
+        {
+          path:'rechargeRecord',
+          name:'rechargeRecord',
+          component:rechargeRecord
         }
-
       ]
     },
     {

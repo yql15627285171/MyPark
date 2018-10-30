@@ -102,4 +102,19 @@ export default{
 
   //月冻结
   getMonthPageList:'EM_Report/getMonthPageList',
+
+  /**
+   * 远程充值
+   */
+  //查询状态
+  queryRechargeState:'transManagement/queryRechargeState',
+
+  //重写
+  retryOperate:'transManagement/retryOperate',
+
+  //充值
+  Recharge:'transManagement/Recharge',
+
+  //交易记录查询
+  getRechargeRecord:'transManagement/getPageList',
 }
